@@ -6,10 +6,18 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch Program",
+            "name": "Program Query",
             "request": "launch",
             "mainClass": "Program",
             "args": ["query"],
+            "sourcePaths": ["{workspacefolder}/src/"] 
+        },
+        {
+            "type": "java",
+            "name": "Program Clear",
+            "request": "launch",
+            "mainClass": "Program",
+            "args": ["clear"],
             "sourcePaths": ["{workspacefolder}/src/"] 
         }
     ]

@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.json.JSONArray;
@@ -41,10 +42,15 @@ public class NasaController implements INasaController {
 
             // check cache for this day
             PhotosCacheService cache = new PhotosCacheService();
-            String cachedData = cache.Read(dateArg);
-            if (cachedData != null) {
-                responseString += cachedData;
-                responseString += "\n";
+            ArrayList<String> cachedData = cache.Read(dateArg);
+            if (cachedData.isEmpty() == false) {
+                String nextImage = "";
+
+                for (String image : cachedData) {
+                    nextImage += "\n\t" + image + ",";
+                }
+
+                responseString += dateArg + " {" + nextImage + "\n}\n";
                 continue;
             }
 
@@ -70,7 +76,11 @@ public class NasaController implements INasaController {
                 for (int j = 0; j < 3; j++) {
                     if (photos.isNull(j)) break;
                     obj = photos.getJSONObject(j);
-                    nextImage += "\n" + obj.getString("img_src") + ",";
+                    String image = obj.getString("img_src");
+                    nextImage += "\n\t" + image + ",";
+
+                    // write image to cache
+                    cache.Write(dateArg, image);
                 }
 
                 responseString += dateArg + " {" + nextImage + "\n}\n";

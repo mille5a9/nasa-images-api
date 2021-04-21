@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -30,12 +31,11 @@ public class PhotosCacheService implements ICacheService<String, String> {
             // find matching date, return next line
             String line = cacheReader.readLine();
             while (line != null) {
-                System.out.println(line);
-                Date entry = formatter.parse(line);
+                String[] content = line.split("\\s+");
+                Date entry = formatter.parse(content[0]);
                 if (entry.after(tenDaysAgo)) {
-                    newCacheContents += line + "\n" + cacheReader.readLine() + "\n";
+                    newCacheContents += content[0] + "\t" + content[1] + "\n";
                 }
-                else cacheReader.readLine(); // cycle past old cache entry
 
                 // load up next date for conditional
                 line = cacheReader.readLine();
@@ -71,39 +71,48 @@ public class PhotosCacheService implements ICacheService<String, String> {
     public void Write(String day, String response) {
         makeCacheFile();
 
-        String isCached = Read(day);
-        if (isCached != null) return;
+        ArrayList<String> isCached = Read(day);
+        if (isCached.isEmpty() == false) {
+            for (String cached : isCached) {
+                if (cached.equals(response)) return;
+            }
+        }
 
         try (FileWriter cacheWriter = new FileWriter(CacheFile, true)) {
-            cacheWriter.append(day + "\n");
-            cacheWriter.append(response + "\n");
+            cacheWriter.append(day + "\t" + response + "\n");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    // returns response for day from cache, empty string if no images, null if that day isn't cached
-    public String Read(String day) {
+    // returns list of images for given day, empty list if no images
+    public ArrayList<String> Read(String day) {
         makeCacheFile();
 
         try (var cacheReader = new BufferedReader(new FileReader(CacheFile))) {
+            ArrayList<String> output = new ArrayList<String>();
 
             // find matching date, return next line
             String line = cacheReader.readLine();
             while (line != null) {
-                if (line.equals(day)) return cacheReader.readLine();
-                else cacheReader.readLine(); // cycle past unrelated cache entry
+                String[] content = line.split("\\s+");
+                // if (line.equals(day)) return cacheReader.readLine();
+                // else cacheReader.readLine(); // cycle past unrelated cache entry
+                if (content[0].equals(day)) {
+                    output.add(content[1]);
+                }
 
-                // load up next date for conditional
+                // next line
                 line = cacheReader.readLine();
             }
+
+            return output;
 
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
-        // date is not cached
-        return null;
+        return new ArrayList<String>();
     }
 
     // make cache file if it isn't there

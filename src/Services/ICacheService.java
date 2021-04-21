@@ -1,9 +1,11 @@
 package Services;
 
+import java.util.ArrayList;
+
 public interface ICacheService<keyType, responseType> {
 
     public void Clean();
     public void Clear();
     public void Write(keyType key, responseType response);
-    public String Read(keyType key);
+    public ArrayList<responseType> Read(keyType key);
 }
