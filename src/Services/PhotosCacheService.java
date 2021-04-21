@@ -69,15 +69,8 @@ public class PhotosCacheService implements ICacheService<String, String> {
 
     // adds previously uncached day's reponse, skips writing if the response is already there
     public void Write(String day, String response) {
-        File cacheLocation = new File(CacheFile);
+        makeCacheFile();
 
-        // make cache if it isn't there
-        try {
-            cacheLocation.createNewFile();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        
         String isCached = Read(day);
         if (isCached != null) return;
 
@@ -91,6 +84,7 @@ public class PhotosCacheService implements ICacheService<String, String> {
 
     // returns response for day from cache, empty string if no images, null if that day isn't cached
     public String Read(String day) {
+        makeCacheFile();
 
         try (var cacheReader = new BufferedReader(new FileReader(CacheFile))) {
 
@@ -110,5 +104,17 @@ public class PhotosCacheService implements ICacheService<String, String> {
 
         // date is not cached
         return null;
+    }
+
+    // make cache file if it isn't there
+    private void makeCacheFile() {
+        File cacheLocation = new File(CacheFile);
+
+        // make cache if it isn't there
+        try {
+            cacheLocation.createNewFile();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
